@@ -43,7 +43,7 @@ Les variables définies à un niveau sont accessibles aux niveaux inférieurs.
 ## Instructions Étape par Étape
 
 ### Étape 1: Créer un Groupe de Variables
-1. Dans Azure DevOps, allez à **Pipelines** → **Bibliothèque** → **Groupes de variables**
+1. Dans Azure DevOps, allez à **Pipelines** → **Library** → **Groupes de variables**
 2. Cliquez sur **+ Groupe de variables**
 3. Nommez le groupe: **"SecretsPipeline"**
 4. Cliquez sur **Enregistrer**
@@ -71,90 +71,144 @@ Répétez pour ajouter:
 2. Remplacez le contenu par:
 
 ```yaml
+# ========================================
+# PIPELINE : Gestion des Variables
+# ========================================
+
 trigger:
   - main
 
 pool:
   vmImage: 'ubuntu-latest'
 
-# Déclaration des groupes de variables
+# ========================================
+# VARIABLES GLOBALES
+# ========================================
 variables:
-- group: SecretsPipeline
-- name: buildConfiguration
-  value: 'Release'
-- name: developerName
-  value: 'FormationAzure'
-- name: projectEnvironment
-  value: 'IEasyTraining'
+  # Groupe de variables secret (défini dans Azure DevOps)
+  - group: SecretsPipeline
+  
+  # Variables locales (publiques)
+  - name: buildConfiguration
+    value: 'Release'
+  - name: developerName
+    value: 'FormationAzure'
+  - name: projectEnvironment
+    value: 'Training'
 
+# ========================================
+# STAGES
+# ========================================
 stages:
-- stage: Build
-  displayName: 'Stage de Build'
-  # Vous pouvez aussi déclarer des variables au niveau de l'étape
-  variables:
-    buildPlatform: 'Any CPU'
-  
-  jobs:
-  - job: BuildJob
-    displayName: 'Tâche d''Affichage des Variables'
+  # ========================================
+  # STAGE 1 : BUILD
+  # ========================================
+  - stage: Build
+    displayName: '🔨 Stage de Build'
     
-    steps:
-    # Afficher les variables globales
-    - script: |
-        echo "=== Variables Globales ==="
-        echo "Configuration: $(buildConfiguration)"
-        echo "Développeur: $(developerName)"
-        echo "Environnement: $(projectEnvironment)"
-      displayName: 'Afficher Variables Globales'
-    
-    # Afficher les variables de l'étape
-    - script: |
-        echo "=== Variables de l'Étape ==="
-        echo "Plateforme: $(buildPlatform)"
-      displayName: 'Afficher Variables de l''Étape'
-    
-    # Les variables secrètes ne sont jamais affichées dans les logs
-    - script: |
-        echo "Les secrets ne seront pas affichés: $(DatabasePassword)"
-      displayName: 'Vérifier Variables Secrètes (Masquées)'
-
-- stage: Test
-  displayName: 'Stage de Test'
-  dependsOn: Build
-  condition: succeeded()
-  
-  jobs:
-  - job: TestJob
-    displayName: 'Tâche de Test des Paramètres'
-    
+    # Variables au niveau du stage
     variables:
-      testConfiguration: 'Debug'
+      buildPlatform: 'Any CPU'
     
-    steps:
-    - script: |
-        echo "Configuration originale: $(buildConfiguration)"
-        echo "Configuration de test: $(testConfiguration)"
-        echo "Environnement: $(projectEnvironment)"
-      displayName: 'Tester Portée des Variables'
+    jobs:
+      - job: BuildJob
+        displayName: "Tâche d'Affichage des Variables"
+        
+        steps:
+          # Étape 1 : Afficher variables globales
+          - script: |
+              echo "=========================================="
+              echo "=== Variables Globales ==="
+              echo "=========================================="
+              echo "Configuration: $(buildConfiguration)"
+              echo "Développeur: $(developerName)"
+              echo "Environnement: $(projectEnvironment)"
+              echo "=========================================="
+            displayName: 'Afficher Variables Globales'
+          
+          # Étape 2 : Afficher variables du stage
+          - script: |
+              echo "=========================================="
+              echo "=== Variables du Stage ==="
+              echo "=========================================="
+              echo "Plateforme de build: $(buildPlatform)"
+              echo "=========================================="
+            displayName: "Afficher Variables du Stage"
+          
+          # Étape 3 : Vérifier variables secrètes (masquées)
+          - script: |
+              echo "=========================================="
+              echo "=== Variables Secrètes (Masquées) ==="
+              echo "=========================================="
+              echo "Mot de passe DB: $(DatabasePassword)"
+              echo "Remarque: Le secret n'est jamais affiché en clair"
+              echo "=========================================="
+            displayName: "Vérifier Variables Secrètes"
 
-- stage: Deploy
-  displayName: 'Stage de Déploiement'
-  dependsOn: Test
-  condition: succeeded()
-  
-  jobs:
-  - job: DeployJob
-    displayName: 'Tâche de Déploiement'
+  # ========================================
+  # STAGE 2 : TEST
+  # ========================================
+  - stage: Test
+    displayName: '✅ Stage de Test'
+    dependsOn: Build
+    condition: succeeded()
     
-    variables:
-      deploymentTimeout: '30'
+    jobs:
+      - job: TestJob
+        displayName: 'Tâche de Test des Paramètres'
+        
+        # Variables au niveau du job
+        variables:
+          testConfiguration: 'Debug'
+        
+        steps:
+          - script: |
+              echo "=========================================="
+              echo "=== Test de la Portée des Variables ==="
+              echo "=========================================="
+              echo "Configuration (globale): $(buildConfiguration)"
+              echo "Configuration (job): $(testConfiguration)"
+              echo "Environnement (globale): $(projectEnvironment)"
+              echo "Plateforme (stage Build): $(buildPlatform)"
+              echo "=========================================="
+            displayName: 'Tester Portée des Variables'
+
+  # ========================================
+  # STAGE 3 : DEPLOY
+  # ========================================
+  - stage: Deploy
+    displayName: '🚀 Stage de Déploiement'
+    dependsOn: Test
+    condition: succeeded()
     
-    steps:
-    - script: |
-        echo "Préparation du déploiement..."
-        echo "Environnement cible: $(projectEnvironment)"
-        echo "Timeout: $(deploymentTimeout) minutes"
-      displayName: 'Préparer le Déploiement'
+    jobs:
+      - job: DeployJob
+        displayName: 'Tâche de Déploiement'
+        
+        # Variables au niveau du job
+        variables:
+          deploymentTimeout: '30'
+          deploymentRegion: 'westeurope'
+        
+        steps:
+          - script: |
+              echo "=========================================="
+              echo "=== Préparation du Déploiement ==="
+              echo "=========================================="
+              echo "Environnement cible: $(projectEnvironment)"
+              echo "Configuration: $(buildConfiguration)"
+              echo "Timeout déploiement: $(deploymentTimeout) minutes"
+              echo "Région: $(deploymentRegion)"
+              echo "=========================================="
+            displayName: 'Préparer le Déploiement'
+          
+          - script: |
+              echo "Simulation du déploiement en cours..."
+              sleep 2
+              echo "Déploiement terminé avec succès!"
+            displayName: 'Exécuter le Déploiement'
+
+
 ```
 
 **Points importants**:
@@ -201,7 +255,7 @@ stages:
 **Temps estimé**: 8 minutes
 
 ### Étape 6: Configurer les Permissions du Groupe (Sécurité)
-1. Retournez à **Pipelines** → **Bibliothèque** → **Groupes de variables**
+1. Retournez à **Pipelines** → **Library** → **Groupes de variables**
 2. Sélectionnez le groupe "SecretsPipeline"
 3. Cliquez sur **Permissions du Pipeline**
 4. Cliquez sur **+ Ajouter**
@@ -213,7 +267,6 @@ stages:
 - Vous devez **autoriser explicitement** chaque pipeline
 - Cela fonctionne comme un pare-feu pour les secrets
 
-**Temps estimé**: 5 minutes
 
 ### Étape 7: Utiliser les Paramètres de Template (Avancé)
 1. Créez un dossier `templates` à la racine du projet:
