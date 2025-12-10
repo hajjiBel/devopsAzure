@@ -9,9 +9,7 @@
 3. [Module 3 : Clone et Push - Premiers Pas](#module-3--clone-et-push---premiers-pas)
 4. [Module 4 : Politiques de Branche Avancées](#module-4--politiques-de-branche-avancées)
 5. [Module 5 : Pull Requests Complètes](#module-5--pull-requests-complètes)
-6. [Module 6 : Intégration GitHub et Azure DevOps](#module-6--intégration-github-et-azure-devops)
-7. [Module 7 : Suivi avec Azure Boards](#module-7--suivi-avec-azure-boards)
-8. [Évaluation Finale](#évaluation-finale)
+
 
 ---
 
@@ -389,6 +387,7 @@ git clone git@ssh.dev.azure.com:v3/organization/project/repository
 #### Étape 1 : Copier le Lien de Clonage
 
 **Sur Azure DevOps :**
+0. Allez sur **Repos** → Initializer un dépôt Git avec un fichier README
 1. Allez sur **Repos** → **Files**
 2. Cliquez sur le bouton **Clone**
 3. Choisissez **HTTPS** ou **SSH**
@@ -545,16 +544,14 @@ Maîtriser les politiques de branche pour améliorer la qualité du code et séc
 
 ### Contexte Théorique
 
-#### Qu'est-ce qu'une Politique de Branche ?
+Une **Pull Request (PR)** est une **demande formelle** de fusionner le code d'une branche vers une autre.
 
-Les **politiques de branche** permettent de mettre en place des **normes de qualité** de code source et de gestion de changement au sein des équipes.
-
-**Fonction principale :**
-- ✅ **Protéger** les branches de développement importantes
-- ✅ Appliquer des **standards de qualité**
-- ✅ **Prévenir** les pushes directs inadéquats
-- ✅ **Améliorer** la collaboration
-- ✅ **Tracer** qui fait quoi et quand
+**Avantages :**
+- ✅ **Révision de code** par les pairs
+- ✅ **Validation** avant fusion
+- ✅ **Collaboration** structurée
+- ✅ **Traçabilité** complète
+- ✅ **Documentation** automatique
 
 #### Policies Disponibles dans Azure DevOps
 
@@ -619,7 +616,7 @@ Les **politiques de branche** permettent de mettre en place des **normes de qual
 3. Définissez le nombre : **2** reviewers minimum
 4. Options additionnelles :
    - ☐ "Allow requestors to approve their own changes" (généralement DÉCOCHÉ)
-   - ☑️ "Require approval from reviewers (not just anyone with push rights)"
+   - ☑️ "Prohibit the most recent pusher from approving their own changes"
 5. Cliquez sur **Save**
 
 **Effet :**
@@ -639,13 +636,6 @@ Les **politiques de branche** permettent de mettre en place des **normes de qual
 - Force les développeurs à **documenter** leur travail
 - Crée une **traçabilité complète**
 
-**Comment l'utiliser :**
-```bash
-# Dans la description de la PR, ajoutez :
-Fixes AB#123
-# ou
-Resolves AB#456
-```
 
 #### Étape 4 : Exiger la Résolution des Commentaires
 
@@ -697,24 +687,29 @@ Resolves AB#456
 
 ### Étape 7 : Tester les Policies
 
-#### Test 1 : Essayer de Merger sans Reviewers
+#### Test 1 : Merger avec approbations
 
-1. Créez une PR simple
-2. Essayez de cliquer sur **Complete**
-3. **Résultat attendu** : Message d'erreur "Requires 2 approvals"
+1. Créez une branche `feature/test-approvals` et poussez au moins un commit.
+2. Ouvrez une **Pull Request** de `feature/test-approvals` vers `main`.
+3. Ajoutez **2 reviewers** à la PR (membres du groupe de reviewers si une politique existe).
+4. Demandez à ces 2 personnes d’ouvrir la PR, de vérifier les changements puis de cliquer sur **Approve**.
+5. Vérifiez que, une fois les 2 approbations obtenues, le bouton **Complete** devient actif sur la PR.
+6. Cliquez sur **Complete** (choisissez le type de merge si nécessaire), puis validez.
+7. **Résultat attendu** : la PR passe à l’état **Completed** et les commits sont fusionnés dans la branche `main`.
 
-#### Test 2 : Merger avec Approbations
+---
 
-1. Demandez à 2 personnes d'approuver
-2. Vérifiez que le bouton **Complete** devient disponible
-3. Mergez la PR
-4. **Résultat attendu** : Fusion réussie
+#### Test 1 : Vérifier l’obligation de Work Item lié
 
-#### Test 3 : Vérifier les Work Items
+1. Créez une branche `feature/no-workitem` et poussez au moins un commit.
+2. Ouvrez une **Pull Request** de `feature/no-workitem` vers `main` **sans lier de Work Item** (ne pas associer de User Story, Bug ou Task).
+3. Ajoutez des reviewers si la politique l’exige et obtenez les approbations nécessaires.
+4. Essayez de cliquer sur **Complete** pour terminer la PR.
+5. **Résultat attendu** : la complétion est bloquée et un message indique qu’un Work Item doit être lié (ex. “Requires linked work item”).
+6. Liez un Work Item existant (ou créez-en un depuis la PR et associez-le).
+7. Relancez l’action **Complete** sur la PR.
+8. **Résultat attendu** : la PR est fusionnée avec succès et le Work Item est automatiquement lié à la PR.
 
-1. Créez une PR **sans lier un work item**
-2. Essayez de la merger
-3. **Résultat attendu** : Erreur "Requires linked work item"
 
 ### Configuration Recommandée par Niveau
 
@@ -745,21 +740,6 @@ Resolves AB#456
 
 ---
 
-## 💬 MODULE 5 : PULL REQUESTS COMPLÈTES
-
-### Objectif
-Maîtriser le cycle de vie complet d'une pull request : création, révision, approbation et fusion.
-
-### Contexte Théorique
-
-Une **Pull Request (PR)** est une **demande formelle** de fusionner le code d'une branche vers une autre.
-
-**Avantages :**
-- ✅ **Révision de code** par les pairs
-- ✅ **Validation** avant fusion
-- ✅ **Collaboration** structurée
-- ✅ **Traçabilité** complète
-- ✅ **Documentation** automatique
 
 ### Étapes Pratiques
 
@@ -832,7 +812,7 @@ git push origin feature/new-header
    - **Titre** : "Update academy branding and header"
    - **Description** : Détaillez les changements et le contexte
 5. Assignez des **Reviewers** (2-3 personnes)
-6. Liez un **Work Item** si nécessaire (AB#123)
+6. Liez un **Work Item** si nécessaire 
 7. Cliquez sur **Create**
 
 **Exemple de description :**
@@ -947,285 +927,6 @@ git branch -a
 
 ---
 
-## 🔗 MODULE 6 : INTÉGRATION GITHUB ET AZURE DEVOPS
-
-### Objectif
-Connecter GitHub à Azure DevOps pour centraliser la gestion de projet et synchroniser les événements.
-
-### Contexte Théorique
-
-L'intégration GitHub-Azure DevOps permet :
-- De **synchroniser** les commits GitHub dans Azure Boards
-- De **lier** les PRs aux work items Azure
-- De **centraliser** la gestion de projet
-- De **suivre** les modifications en temps réel
-
-### Étapes Pratiques
-
-#### Étape 1 : Installer l'Extension Azure Boards
-
-1. Allez sur **GitHub Marketplace**
-   - URL : https://github.com/marketplace
-2. Cherchez **"Azure Boards"**
-3. Cliquez sur l'extension **Azure Boards**
-4. Cliquez sur **Install** (Install free)
-5. Sélectionnez **votre compte GitHub**
-6. Autorisez les permissions demandées
-
-#### Étape 2 : Configurer la Connexion dans Azure DevOps
-
-1. Allez à votre **Projet Azure DevOps**
-2. Allez dans **Project Settings**
-3. Cherchez **GitHub Connections** (ou **Integrations**)
-4. Cliquez sur **New Connection**
-5. Connectez-vous à votre **compte GitHub**
-6. **Sélectionnez le repository** à connecter
-7. **Confirmez la liaison**
-
-#### Étape 3 : Vérifier la Connexion
-
-1. Retournez à **Azure Boards**
-2. Allez sur votre **Backlog** ou **Board**
-3. Vous devriez voir une section **GitHub Connections** ou **Events**
-4. Les événements GitHub s'affichent :
-   - Créations de fichiers
-   - Commits
-   - Pull requests
-   - Fusions
-
-### Points Clés à Mémoriser
-- La connexion crée un **pont bidirectionnel**
-- Les événements GitHub alimentent Azure Boards **en temps réel**
-- Les permissions GitHub doivent être **suffisantes**
-- La synchronisation **centralise** la gestion de projet
-
----
-
-## 📊 MODULE 7 : SUIVI AVEC AZURE BOARDS
-
-### Objectif
-Utiliser Azure Boards pour suivre les modifications GitHub et mettre à jour automatiquement les statuts.
-
-### Contexte Théorique
-
-Le suivi intégré permet de :
-- Créer des **work items** liés aux commits
-- Mettre à jour automatiquement les statuts avec des **keywords**
-- Tracer l'**historique complet** du travail
-- Voir les **événements** directement dans le work item
-
-### Mots-Clés Spéciaux
-
-| Mot-clé | Effet | Exemple |
-|---------|-------|---------|
-| `AB#<ID>` | Lie simplement | `git commit -m "Add feature AB#148"` |
-| `fixed AB#<ID>` | Marque comme Done | `Fixed AB#148` |
-| `closes AB#<ID>` | Synonym de fixed | `Closes AB#148` |
-| `resolves AB#<ID>` | Alternative à fixed | `Resolves AB#148` |
-
-### Étapes Pratiques
-
-#### Étape 1 : Créer un Work Item
-
-1. Allez sur **Azure Boards** → **Backlog**
-2. Cliquez sur **New Work Item** ou **+**
-3. Sélectionnez le type : **Issue** ou **User Story**
-4. Remplissez :
-   - **Title** : "Implement user authentication system"
-   - **Description** : Description détaillée
-   - **Priority** : Important pour vous
-   - **Assignee** : Vous-même
-5. Cliquez sur **Save & Close**
-6. **Notez l'ID** (ex: 148)
-
-#### Étape 2 : Créer une Branche GitHub
-
-```bash
-# Allez sur GitHub
-# Créez une nouvelle branche nommée :
-git checkout -b feature/user-auth
-```
-
-#### Étape 3 : Faire un Commit Lié au Work Item
-
-```bash
-# Créez un fichier
-echo "# User Authentication" > auth.py
-
-# Committez en liant le work item
-git add auth.py
-git commit -m "Implement user authentication - AB#148"
-```
-
-**Important :** Utilisez le format `AB#<ID>` dans le message de commit
-
-#### Étape 4 : Pousser et Créer une PR
-
-```bash
-# Poussez la branche
-git push origin feature/user-auth
-
-# Sur GitHub, créez une PR
-# Titre : "Implement user authentication - AB#148"
-```
-
-#### Étape 5 : Fusionner avec le Mot-Clé "Fixed"
-
-Dans la PR GitHub ou lors du commit de fusion, utilisez :
-```
-Fixed AB#148
-```
-
-ou dans le corps de la PR :
-```
-## Description
-Implements the complete user authentication system
-
-## Fixes
-Fixes AB#148
-
-## Changes
-- Added login form
-- Integrated with database
-- Added session management
-```
-
-#### Étape 6 : Observer la Mise à Jour Automatique
-
-1. Retournez à **Azure Boards**
-2. Consultez le **work item #148**
-3. Vous verrez :
-   - Le statut est passé de **To Do** à **Done** (automatiquement!)
-   - Les **événements GitHub** listés :
-     - Commit créé
-     - Pull request créée
-     - Merge complété
-4. Consultez la section **Events** ou **Activity**
-
-#### Étape 7 : Consulter l'Historique Complet
-
-1. Dans le work item, allez à **Activity** ou **Events**
-2. Vous verrez :
-   - Qui a créé le work item
-   - Quand il a été assigné
-   - Les commits GitHub liés
-   - La PR GitHub créée
-   - La fusion effectuée
-   - Le changement de statut automatique
-   - Les dates précises
-
-### Points Clés à Mémoriser
-- Le lien `AB#<ID>` crée une **liaison bidirectionnelle**
-- Le mot `fixed` déclenche la **fermeture automatique**
-- L'historique des événements est **complet et traçable**
-- La synchronisation **aide** au suivi de projet en temps réel
-
----
-
-## 🎓 ÉVALUATION FINALE
-
-### Checklist de Maîtrise
-
-Vérifiez que vous pouvez accomplir les points suivants :
-
-#### 📌 Module 1 : Présentation
-- [ ] Expliquer les différences entre Git et TFVC
-- [ ] Citer 3 avantages d'Azure Repos
-- [ ] Comprendre pourquoi Git est le choix privilégié
-
-#### 🖥️ Module 2 : Navigation
-- [ ] Naviguer dans toutes les sections d'Azure Repos
-- [ ] Consulter l'historique des commits
-- [ ] Lister toutes les branches
-- [ ] Examiner une PR complète
-
-#### 🚀 Module 3 : Clone et Push
-- [ ] Cloner un dépôt avec HTTPS et SSH
-- [ ] Faire un commit local
-- [ ] Pousser vers le serveur
-- [ ] Vérifier le push sur Azure DevOps
-
-#### 🛡️ Module 4 : Politiques
-- [ ] Configurer le nombre minimum de reviewers
-- [ ] Activer la liaison avec work items
-- [ ] Exiger la résolution des commentaires
-- [ ] Limiter les stratégies de fusion
-
-#### 💬 Module 5 : Pull Requests
-- [ ] Créer une branche feature
-- [ ] Faire des modifications
-- [ ] Créer une PR complète
-- [ ] Ajouter des commentaires
-- [ ] Approuver et merger
-
-#### 🔗 Module 6 : Intégration GitHub
-- [ ] Installer l'extension Azure Boards
-- [ ] Configurer la connexion GitHub
-- [ ] Vérifier la synchronisation des événements
-
-#### 📊 Module 7 : Suivi avec Boards
-- [ ] Créer un work item
-- [ ] Committer avec `AB#<ID>`
-- [ ] Fusionner avec le mot-clé `fixed`
-- [ ] Vérifier la mise à jour automatique du statut
-- [ ] Consulter l'historique complet
-
-### Questions Théoriques
-
-**Q1 : Pourquoi utiliser les politiques de branche ?**
-- R : Elles assurent la qualité du code, préviennent les erreurs et appliquent les standards de l'équipe.
-
-**Q2 : Quels sont les 3 types d'approbation dans une PR ?**
-- R : Approve, Approve with suggestions, Reject.
-
-**Q3 : Quel mot-clé ferme automatiquement un work item ?**
-- R : `Fixed AB#<ID>`, `Closes AB#<ID>`, ou `Resolves AB#<ID>`.
-
-**Q4 : Quelle est la différence entre un commit local et un push ?**
-- R : Le commit sauvegarde localement, le push envoie vers le serveur.
-
-**Q5 : Pourquoi intégrer GitHub et Azure DevOps ?**
-- R : Pour centraliser la gestion de projet et synchroniser les événements en temps réel.
-
-### Projet Pratique Final
-
-Complétez ce projet pour démontrer votre maîtrise :
-
-1. **Créez un work item** : "Build a simple web calculator"
-2. **Créez une branche** : `feature/calculator`
-3. **Faites 3 commits** : 
-   - Commit 1 : Structure HTML (AB#XXX)
-   - Commit 2 : Styles CSS (AB#XXX)
-   - Commit 3 : Logique JavaScript (AB#XXX)
-4. **Créez une PR** avec description détaillée
-5. **Demandez 2 reviewers** d'approuver
-6. **Mergez** avec le mot-clé `Fixed AB#XXX`
-7. **Vérifiez** que le work item passe à "Done" automatiquement
-8. **Consultez** l'historique complet des événements
-
----
-
-
-### Commandes Git Utiles
-```bash
-# Voir l'historique
-git log --oneline --graph --all
-
-# Voir les branches
-git branch -a
-
-# Voir les changements
-git diff
-
-# Voir le statut
-git status
-
-# Stash des changements
-git stash
-
-# Annuler un commit local
-git reset HEAD~1
-```
 
 
 
