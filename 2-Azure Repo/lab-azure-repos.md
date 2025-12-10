@@ -17,46 +17,173 @@
 
 ## 🎯 MODULE 1 : PRÉSENTATION D'AZURE REPOS
 
-### Objectif
-Comprendre les fondamentaux d'Azure Repos et les types de contrôle de version disponibles.
+### Qu'est-ce qu'Azure Repos ?
 
-### Contexte Théorique
+**Azure Repos** est le service de gestion de version intégré à Azure DevOps. Il offre des capacités complètes de contrôle de version pour gérer votre code source de manière centralisée et sécurisée, peu importe l'ampleur de votre projet.
 
-#### Qu'est-ce qu'Azure Repos ?
-**Azure Repos** est un ensemble d'outils de gestion de version que vous pouvez utiliser pour gérer votre code source, quelle que soit la taille de votre projet logiciel.
+Un système de gestion de version est un **logiciel fondamental** qui vous permet de :
+- **Tracer toutes les modifications** apportées à votre code
+- **Maintenir un historique complet** de l'évolution du projet
+- **Collaborer efficacement** au sein d'une équipe
+- **Revenir à des versions antérieures** si nécessaire
 
-Les systèmes de gestion de version sont des **logiciels qui vous permettent de suivre les modifications** que vous apporterez dans votre code au fil du temps.
+---
 
-#### Types de Contrôle de Version
+## 🔄 Systèmes de Contrôle de Version
 
-**1. Git (Contrôle de Version Distribué)**
-- ✅ Système de version **le plus répandu** aujourd'hui
-- ✅ Système de version **le plus utilisé** dans l'industrie
-- ✅ Devenu rapidement une **norme dans le domaine IT**
-- ✅ Chaque développeur a une **copie complète** du dépôt
-- ✅ Permet le travail **hors ligne**
-- ✅ Meilleur pour les **petites et grandes équipes**
+Azure Repos supporte deux approches principales de gestion de version :
 
+### 1️⃣ Git (Contrôle de Version Distribué) ⭐ RECOMMANDÉ
 
-### Choix Recommandé
-Pour cette formation, nous nous concentrerons sur **Git** car :
-- C'est le **système standard** du secteur
-- Il offre plus de **flexibilité**
-- Il facilite la **collaboration distribuée**
-- Il est **plus facile** à apprendre
+**Caractéristiques principales** :
+- **Système décentralisé** : Chaque développeur dispose d'une copie locale complète du référentiel
+- **Indépendance** : Permet de travailler hors ligne avec toute l'historique disponible localement
+- **Performance** : Opérations locales ultrarapides (commit, branches, fusions)
+- **Flexibilité** : Gestion avancée des branches et des flux de travail
+- **Scalabilité** : Parfaitement adapté aux petites et grandes équipes
 
-### Avantages d'Azure Repos
-- ✅ Intégration totale avec **Azure DevOps**
-- ✅ Gestion des branches avancée
-- ✅ Pull Requests complètes
-- ✅ Politiques de branche automatisées
-- ✅ Traçabilité complète des modifications
+**Pourquoi Git domine le secteur** :
+- ✅ **Norme industrielle** acceptée et utilisée par la majorité des développeurs
+- ✅ **Écosystème riche** d'outils et d'intégrations
+- ✅ **Communauté active** avec documentation abondante
+- ✅ **Compatibilité universelle** avec tous les environnements DevOps modernes
+- ✅ **Workflows avancés** (feature branches, pull requests, code reviews)
 
-### Points Clés
-- Azure Repos gère **tous les types de projets**
-- Git est le **choix privilégié** actuellement
-- La gestion de version permet de **tracer chaque modification**
-- Azure Repos s'intègre parfaitement à **Azure DevOps**
+### 2️⃣ TFVC (Team Foundation Version Control) - Centralisé
+
+**Caractéristiques** :
+- Système **centralisé** avec un serveur principal unique
+- Chaque développeur récupère uniquement les fichiers sur lesquels il travaille
+- Meilleur pour les projets avec des fichiers volumineux (binaires)
+- Moins flexible que Git pour les workflows modernes
+
+**Quand utiliser TFVC** :
+- Projets legacy avec dépendances critiques sur le serveur central
+- Environnements exigeant un contrôle d'accès très strict
+- Travail principalement sur fichiers binaires volumineux
+
+---
+
+## 💡 Avantages d'Azure Repos avec Git
+
+### Intégration Azure DevOps Complète
+- **Pipelines automatisés** : Déclenchez directement vos pipelines CI/CD depuis Git
+- **Boards liés** : Connectez vos commits et pull requests aux éléments de travail
+- **Policies avancées** : Imposez des règles de qualité avant la fusion de code
+
+### Gestion des Branches Professionnelle
+- **Protection des branches** : Empêchez les push directs sur main/master
+- **Stratégies de branche** : Build automatiques, approbations obligatoires
+- **Nommage standardisé** : Conventions feature/, bugfix/, hotfix/
+
+### Pull Requests Puissantes
+- **Code reviews intégrées** : Approvals et commentaires threading
+- **Validation automatique** : Tests et vérifications avant fusion
+- **Traçabilité complète** : Historique détaillé de chaque changement
+
+### Sécurité et Conformité
+- **Contrôle d'accès granulaire** : Par branche, par équipe, par ressource
+- **Audit trail complet** : Qui a changé quoi et quand
+- **Secrets management** : Intégration avec Azure Key Vault
+
+### Collaboration Distribuée
+- **Travail hors ligne** : Commits sans connexion réseau
+- **Fusion intelligente** : Gestion efficace des conflits
+- **Blame et history** : Trouver facilement l'origine d'une modification
+
+---
+
+## 🏗️ Architecture d'Azure Repos
+
+```
+┌─────────────────────────────────────────────────────────┐
+│           Azure DevOps Organization                      │
+│                                                           │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │           Azure DevOps Project                    │   │
+│  │                                                   │   │
+│  │  ┌──────────────────────────────────────────┐   │   │
+│  │  │  Azure Repos (Git Repository)             │   │   │
+│  │  │                                            │   │   │
+│  │  │  📁 Main Branch (Production-Ready)        │   │   │
+│  │  │     ├── v1.0 release tag                  │   │   │
+│  │  │     └── v1.1 release tag                  │   │   │
+│  │  │                                            │   │   │
+│  │  │  📁 Develop Branch (Intégration)          │   │   │
+│  │  │     └── commit history                    │   │   │
+│  │  │                                            │   │   │
+│  │  │  📁 Feature Branches (Travail en cours)   │   │   │
+│  │  │     ├── feature/login-module              │   │   │
+│  │  │     └── feature/payment-integration       │   │   │
+│  │  │                                            │   │   │
+│  │  └──────────────────────────────────────────┘   │   │
+│  │                                                   │   │
+│  │  Connecté à :                                    │   │
+│  │  • Azure Pipelines (CI/CD)                       │   │
+│  │  • Azure Boards (Work Items)                     │   │
+│  │  • Azure Artifacts (Package Management)         │   │
+│  └──────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔑 Concepts Fondamentaux de Git
+
+### Repository (Dépôt)
+Un **repository** est l'espace de stockage central où votre code et son historique complet sont sauvegardés. Chaque développeur a une copie locale complète du repository.
+
+```
+Repository Centralisé (Azure Repos)
+        ↑
+        │ pull, push
+        │ 
+   ┌────┴────┐
+   │   Git   │
+   └────┬────┘
+        ↓
+   Dépôt Local (votre ordinateur)
+   - Code source
+   - Historique complet
+   - Branches
+```
+
+### Branch (Branche)
+Une **branche** est une copie indépendante du code permettant de travailler en parallèle sans affecter le code principal. Les branches permettent l'isolation des changements jusqu'à leur intégration.
+
+**Branches essentielles** :
+- `main` ou `master` → Code en production
+- `develop` → Intégration continue des features
+- `feature/*` → Nouvelles fonctionnalités
+- `bugfix/*` → Corrections de bugs
+
+### Commit
+Un **commit** est une sauvegarde d'un ensemble cohérent de modifications avec un message descriptif. C'est l'unité de base de l'historique du projet.
+
+```
+Timeline des Commits
+─────────────────────────────────────
+│ 001: Initial project setup
+│ 002: Add login functionality
+│ 003: Fix authentication bug
+│ 004: Add user dashboard
+│ 005: Optimize database queries ← Current
+─────────────────────────────────────
+```
+
+### Pull Request (Demande de Pull)
+Une **pull request** (PR) est une demande formelle de fusionner les changements d'une branche à une autre. Elle permet les code reviews et validations avant l'intégration.
+
+**Cycle d'une Pull Request** :
+```
+1. Créer une feature branch
+2. Pusher les commits
+3. Ouvrir une Pull Request
+4. Code review (approbations)
+5. Tests automatiques (pipelines)
+6. Fusionner dans main/develop
+7. Supprimer la branche
+```
 
 ---
 
