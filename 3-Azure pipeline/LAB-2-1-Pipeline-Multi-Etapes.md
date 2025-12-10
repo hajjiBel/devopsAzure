@@ -57,7 +57,7 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
-  environmentName: 'IEasyTraining'
+  environmentName: 'Training'
 
 stages:
 - stage: Build
@@ -69,7 +69,7 @@ stages:
     - script: echo Initialisation du Build...
       displayName: 'Initialiser le Build'
     
-    - script: echo Configuration: $(buildConfiguration)
+    - script: echo Configuration $(buildConfiguration)
       displayName: 'Afficher la Configuration'
     
     - script: echo Build terminé avec succès!
@@ -102,9 +102,9 @@ stages:
     steps:
     - script: echo Déploiement en cours...
       displayName: 'Déployer l''Application'
-    
-    - script: echo Application déployée vers $(environmentName)
-      displayName: 'Vérifier le Déploiement'
+    #corriger
+        -      script: echo Application déployée vers $(environmentName)
+                                displayName: 'Vérifier le Déploiement'
 ```
 
 **Explications clés**:
@@ -233,7 +233,7 @@ Vous pouvez aussi définir des variables spécifiques à une étape:
   jobs:
   - job: BuildJob
     steps:
-    - script: echo Configuration: $(buildConfiguration)
+    - script: echo Configuration $(buildConfiguration)
 ```
 
 ## Dépannage Courant
