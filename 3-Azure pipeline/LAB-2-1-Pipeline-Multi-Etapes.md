@@ -59,52 +59,62 @@ variables:
   buildConfiguration: 'Release'
   environmentName: 'Training'
 
+# ========================================
+# STAGE 1 : BUILD
+# ========================================
 stages:
-- stage: Build
-  displayName: 'Stage de Build'
-  jobs:
-  - job: BuildJob
-    displayName: 'Tâche de Build'
-    steps:
-    - script: echo Initialisation du Build...
-      displayName: 'Initialiser le Build'
-    
-    - script: echo Configuration $(buildConfiguration)
-      displayName: 'Afficher la Configuration'
-    
-    - script: echo Build terminé avec succès!
-      displayName: 'Compilation du Code'
+  - stage: Build
+    displayName: 'Stage de Build'
+    jobs:
+      - job: BuildJob
+        displayName: 'Tâche de Build'
+        steps:
+          - script: echo "Initialisation du Build..."
+            displayName: 'Initialiser le Build'
+          
+          - script: echo "Configuration $(buildConfiguration)"
+            displayName: 'Afficher la Configuration'
+          
+          - script: echo "Build terminé avec succès!"
+            displayName: 'Compilation du Code'
 
-- stage: Test
-  displayName: 'Stage de Test'
-  dependsOn: Build
-  condition: succeeded()
-  jobs:
-  - job: TestJob
-    displayName: 'Tâche de Test'
-    steps:
-    - script: echo Exécution des tests unitaires...
-      displayName: 'Tests Unitaires'
-    
-    - script: echo Exécution des tests d'intégration...
-      displayName: 'Tests d''Intégration'
-    
-    - script: echo Tous les tests ont réussi!
-      displayName: 'Vérification des Tests'
+# ========================================
+# STAGE 2 : TEST
+# ========================================
+  - stage: Test
+    displayName: 'Stage de Test'
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - job: TestJob
+        displayName: 'Tâche de Test'
+        steps:
+          - script: echo "Exécution des tests unitaires..."
+            displayName: 'Tests Unitaires'
+          
+          - script: echo "Exécution des tests d'intégration..."
+            displayName: 'Tests Intégration'
+          
+          - script: echo "Tous les tests ont réussi"
+            displayName: 'Vérification des Tests'
 
-- stage: Deploy
-  displayName: 'Stage de Déploiement'
-  dependsOn: Test
-  condition: succeeded()
-  jobs:
-  - job: DeployJob
-    displayName: 'Tâche de Déploiement'
-    steps:
-    - script: echo Déploiement en cours...
-      displayName: 'Déployer l''Application'
-    #corriger
-        -      script: echo Application déployée vers $(environmentName)
-                                displayName: 'Vérifier le Déploiement'
+# ========================================
+# STAGE 3 : DEPLOY
+# ========================================
+  - stage: Deploy
+    displayName: 'Stage de Déploiement'
+    dependsOn: Test
+    condition: succeeded()
+    jobs:
+      - job: DeployJob
+        displayName: 'Tâche de Déploiement'
+        steps:
+          - script: echo "Déploiement en cours..."
+            displayName: 'Déployer l''Application'
+          #corriger
+              -       script: echo "Application déployée vers $(environmentName)"
+                    displayName: 'Vérifier le Déploiement'
+
 ```
 
 **Explications clés**:
