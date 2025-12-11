@@ -190,7 +190,24 @@ stages:
 - Avant cette étape, le pipeline demande une approbation manuelle
 - Sans approbation, le pipeline ne peut pas continuer
 
-**Temps estimé**: 10 minutes
+****Configuration du Stage****
+- **stage: DeployDev** : Identifiant unique du stage utilisé pour référencer cette étape dans le pipeline et établir des dépendances avec d'autres stages.
+
+- **displayName:** 'Déployer en Développement' : Nom descriptif affiché dans l'interface Azure DevOps pour faciliter la lecture et le suivi de l'exécution du pipeline.
+
+- **dependsOn: Test** : Indique que ce stage ne peut démarrer qu'après la complétion du stage nommé "Test", créant ainsi une séquence ordonnée dans votre pipeline (Build → Test → DeployDev).
+
+- **condition: succeeded()** : Le déploiement ne s'exécutera que si le stage "Test" s'est terminé avec succès, évitant ainsi de déployer du code défaillant.
+
+Configuration du Job de Déploiement
+- **deployment: DeployToDev** : Type de job spécial pour les déploiements qui offre des fonctionnalités avancées comme l'historique des déploiements, le suivi et les approbations.
+
+- **environment**: 'Développement' : Référence l'environnement Azure DevOps nommé "Développement", permettant de configurer des approbations, des contrôles de sécurité et de suivre l'historique des déploiements sur cet environnement.
+
+Stratégie de Déploiement
+- **strategy: runOnce** : Stratégie de déploiement la plus simple qui exécute les étapes une seule fois sans phases de pré-déploiement, déploiement ou post-déploiement complexes. Cette stratégie convient parfaitement à l'environnement de développement où la rapidité prime sur les contrôles élaborés.
+
+- **deploy: steps:** : Section contenant les étapes concrètes du déploiement, ici un simple script d'écho qui simule le déploiement (dans un cas réel, vous y placeriez vos commandes de déploiement comme az webapp deployment, kubectl apply, ou autres).
 
 ### Étape 5: Ajouter une Validation Avant Déploiement
 1. Modifiez le pipeline pour ajouter une étape de vérification:
