@@ -437,40 +437,6 @@ stages:
 | **Utilitaire** | PublishBuildArtifacts | Publier des artifacts |
 | **Utilitaire** | DownloadBuildArtifacts | Télécharger des artifacts |
 
-## Exemples de Templates Avancés
-
-### Template avec Matrices
-```yaml
-parameters:
-  - name: nodeVersions
-    type: object
-    default:
-      - 14.x
-      - 16.x
-      - 18.x
-
-jobs:
-- ${{ each version in parameters.nodeVersions }}:
-  - job: TestNode_${{ replace(version, '.', '_') }}
-    displayName: 'Test Node.js ${{ version }}'
-    steps:
-    - script: echo "Testing with Node ${{ version }}"
-```
-
-### Template avec Variables d'Environnement
-```yaml
-parameters:
-  - name: environmentVariables
-    type: object
-
-jobs:
-- job: JobWithEnvVars
-  displayName: 'Job avec Variables'
-  steps:
-  - script: |
-      ${{ each var in parameters.environmentVariables }}:
-        echo "${{ var.key }}=${{ var.value }}"
-```
 
 ## Dépannage Courant
 
