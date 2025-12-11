@@ -58,7 +58,7 @@ Pour chaque environnement:
 
 ### Étape 2: Configurer les Portes d'Approbation
 1. Sélectionnez l'environnement **Production**
-2. Cliquez sur l'icône **Approvals and checks** (trois points)
+2. Cliquez sur **Approvals and checks** 
 3. Sélectionnez **Approvals**
 4. Cliquez sur **+ Ajouter**
 5. Remplissez les champs:
