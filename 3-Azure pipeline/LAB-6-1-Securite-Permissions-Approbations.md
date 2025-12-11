@@ -300,22 +300,6 @@ Stratégie de Déploiement
 
 **Résultat**: Les déploiements en production ne peuvent se faire que durant les heures de bureau
 
-**Temps estimé**: 3 minutes
-
-### Étape 10: Auditer les Approbations
-1. Allez à **Pipelines** → Sélectionnez un pipeline exécuté
-2. Observez les **Étapes** et cliquez sur la section **Production**
-3. Vous verrez:
-   - Qui a approuvé
-   - Quand l'approbation a été faite
-   - Le message d'approbation (si fourni)
-
-4. Allez à **Paramètres du projet** → **Audit**
-5. Recherchez les actions liées aux approbations:
-   - Deployment approval granted
-   - Deployment approval rejected
-
-**Temps estimé**: 5 minutes
 
 ## Résultats Attendus
 
