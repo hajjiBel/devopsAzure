@@ -11,6 +11,7 @@
 
 ## 1. Schéma des Étapes CI/CD
 
+```
 ┌─────────────────────────────────────────────────────────────────┐
 │                     TRIGGER (Commit/PR)                         │
 └──────────────────────┬──────────────────────────────────────────┘
@@ -41,6 +42,7 @@
         │  ├─ Deploy via AzureWebApp   │
         │  └─ Run smoke tests          │
         └──────────────────────────────┘
+```
 
 ### Description du flux
 
@@ -66,6 +68,7 @@
 
 Créez un fichier `azure-pipelines.yml` à la racine de votre repository :
 
+```yaml
 # Trigger: Déclenche le pipeline sur les commits vers main
 trigger:
   - main
@@ -160,6 +163,7 @@ stages:
                       echo "⚠️ Health check returned: HTTP $STATUS"
                     fi
                   displayName: 'Health check (Smoke test)'
+```
 
 ### Explication des sections principales
 
@@ -177,6 +181,8 @@ stages:
 ## 3. Composants Clés du Pipeline
 
 ### 3.1 Trigger
+
+```yaml
 trigger:
   - main
   # Optionnel: configurer les branches et les chemins
@@ -184,39 +190,54 @@ trigger:
     include:
       - src/**
       - azure-pipelines.yml
+```
+
 Le trigger déclenche le pipeline lors d'un commit sur `main` ou sur les fichiers spécifiés.
 
 ### 3.2 Pool (Agent de Build)
+
+```yaml
 pool:
   vmImage: 'ubuntu-latest'  # Linux
   # vmImage: 'windows-latest'  # Windows
   # vmImage: 'macos-latest'   # macOS
+```
+
 Le pool définit l'environnement d'exécution des tâches.
 
 ### 3.3 Variables
+
+```yaml
 variables:
   buildConfiguration: 'Release'
   azureSubscription: 'ServiceConnection-Lab'
   webAppName: 'my-pipeline-lab-$(Build.BuildId)'
   # Variables secrètes (créées dans l'interface Azure DevOps)
   # - deploymentKey: $(SECRET_KEY)
+```
+
 Les variables réutilisables dans le pipeline. Les variables secrètes sont définies dans les paramètres Azure DevOps.
 
 ### 3.4 Stages
+
 Deux étapes logiques :
 - **CI Stage** : Compilation, tests unitaires, publication des artefacts
 - **CD Stage** : Création de l'App Service et déploiement vers Azure
 
 ### 3.5 Jobs et Steps
+
 - **Job** : Ensemble de tâches exécutées séquentiellement
 - **Step** : Tâche individuelle (script, task Azure CLI, task Azure Web App)
 
 #### Exemple de dépendance entre jobs
+
+```yaml
 - job: CreateAppService
   displayName: 'Create Azure App Service'
 
 - deployment: DeployToAppService
   dependsOn: CreateAppService  # S'exécute après CreateAppService
+```
 
 ### 3.6 Tâches principales du CD
 
@@ -296,9 +317,11 @@ Deux étapes logiques :
 
 Le pipeline se déclenche automatiquement lors d'un commit sur la branche `main` :
 
+```bash
 git add azure-pipelines.yml
 git commit -m "Add CI/CD pipeline"
 git push origin main
+```
 
 Le pipeline démarre automatiquement et vous pouvez suivre son avancement dans **Pipelines > Runs**.
 
@@ -306,11 +329,13 @@ Le pipeline démarre automatiquement et vous pouvez suivre son avancement dans *
 
 Une fois le pipeline réussi, vérifiez le déploiement :
 
+```bash
 # Accéder à l'URL de l'application
 https://my-pipeline-lab-[votrenom].azurewebsites.net
 
 # Ou via curl
 curl https://my-pipeline-lab-[votrenom].azurewebsites.net
+```
 
 **Résultat attendu** : La page de l'application s'affiche (ou page par défaut Azure App Service si première déploiement)
 
@@ -357,7 +382,7 @@ Cliquez sur chaque job pour consulter les logs détaillés de chaque étape.
 
 ---
 
-## 6. Points de contrôle qualité
+## 7. Points de contrôle qualité
 
 | Étape | Critère de succès | Validation |
 |-------|------------------|-----------|
@@ -367,7 +392,9 @@ Cliquez sur chaque job pour consulter les logs détaillés de chaque étape.
 | Déploiement | Application en ligne sur Web App | ✅ Accès à `https://my-pipeline-lab-[votrenom].azurewebsites.net` |
 | Smoke test | Health check réussi | ✅ HTTP 200 retourné |
 
-## 7. Ressources Supplémentaires
+---
+
+## 8. Ressources Supplémentaires
 
 - [Documentation Azure Pipelines](https://learn.microsoft.com/en-us/azure/devops/pipelines/get-started/what-is-azure-pipelines)
 - [YAML Schema Reference](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema)
@@ -378,6 +405,4 @@ Cliquez sur chaque job pour consulter les logs détaillés de chaque étape.
 
 **Fin du Lab**
 
-Durée estimée : **45-60 minutes**  
-Niveau : Intermédiaire  
-Prérequis : Compte Azure, Azure DevOps, Git
+**Prérequis** : Compte Azure, Azure DevOps, Git
