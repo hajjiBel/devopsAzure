@@ -307,10 +307,10 @@ stages:
    - Une fois le pipeline terminé, allez dans le portail Azure ou utilisez `kubectl`.
    - Récupérez l'IP publique du service :
 
-az aks get-credentials --resource-group <RG> --name <AKS_NAME> --overwrite-existing
-kubectl get nodes
-kubectl get service
-kubectl get svc my-app-service
+- az aks get-credentials --resource-group <RG> --name <AKS_NAME> --overwrite-existing
+- kubectl get nodes
+- kubectl get service
+- kubectl get svc my-app-service
  
 ---
    - Ouvrez l'IP externe (`EXTERNAL-IP`) dans votre navigateur. Vous devriez voir "Bienvenue sur mon application AKS v1 !".
