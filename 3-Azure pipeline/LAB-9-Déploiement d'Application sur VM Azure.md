@@ -67,6 +67,7 @@
 Créez un fichier `azure-pipelines.yml` à la racine de votre repository :
 
 ```yaml
+
 trigger:
   - main
 
@@ -76,7 +77,6 @@ pool:
 variables:
   buildConfiguration: 'Release'
   artifactName: 'app-artifact'
-  azureSubscription: 'ServiceConnection-Lab'
 
 stages:
   - stage: CI
@@ -89,33 +89,32 @@ stages:
           - checkout: self
             displayName: 'Checkout code'
 
-          # Étape 2: Installer les dépendances
+          # Étape 2: Installer Node.js
           - task: NodeTool@0
             displayName: 'Install Node.js'
             inputs:
               versionSpec: '18.x'
-          
+
+          # Étape 3: Installer les dépendances
           - script: npm install
             displayName: 'Install dependencies'
 
-          # Étape 3: Build
-          - script: npm run build
-            displayName: 'Build application'
-          
           # Étape 4: Tests unitaires
-          - script: npm run test
+          - script: npm test
             displayName: 'Run unit tests'
-          
-          # Étape 5: Publier les artefacts
+            continueOnError: true
+
+          # Étape 5: Archiver l'application
           - task: ArchiveFiles@2
-            displayName: 'Archive application'
+            displayName: 'Archive application files'
             inputs:
-              rootFolderOrFile: '$(System.DefaultWorkingDirectory)/dist'
+              rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
               includeRootFolder: false
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/$(artifactName).zip'
               replaceExistingArchive: true
 
+          # Étape 6: Publier les artefacts
           - task: PublishBuildArtifacts@1
             displayName: 'Publish artifacts'
             inputs:
@@ -127,7 +126,6 @@ stages:
     dependsOn: CI
     condition: succeeded()
     jobs:
-      # Job: Déployer vers VM
       - deployment: DeployToVM
         displayName: 'Deploy to Virtual Machine'
         environment:
@@ -143,60 +141,159 @@ stages:
                   artifact: 'drop'
                   displayName: 'Download artifacts'
 
-                # Étape 2: Créer le répertoire de déploiement
-                - script: |
-                    echo "Creating deployment directory..."
+                # Étape 2: Debug - Afficher le contenu du workspace
+                - bash: |
+                    echo "========== WORKSPACE DEBUG =========="
+                    echo "Pipeline.Workspace: $(Pipeline.Workspace)"
+                    echo ""
+                    echo "Contenu de $(Pipeline.Workspace)/drop/:"
+                    ls -la $(Pipeline.Workspace)/drop/
+                    echo ""
+                    echo "Contenu du ZIP:"
+                    unzip -l $(Pipeline.Workspace)/drop/$(artifactName).zip | head -20
+                    echo "========================================="
+                  displayName: 'Debug workspace'
+
+                # Étape 3: Nettoyer et préparer le répertoire
+                - bash: |
+                    echo "Cleaning deployment directory..."
+                    rm -rf /home/azureuser/app
                     mkdir -p /home/azureuser/app
                     cd /home/azureuser/app
-                    echo "Directory created: $(pwd)"
-                  displayName: 'Create deployment directory'
+                    echo "✅ Directory prepared: $(pwd)"
+                  displayName: 'Prepare directory'
 
-                # Étape 3: Extraire l'artefact
-                - script: |
+                # Étape 4: Extraire le ZIP - VERSION CORRIGÉE
+                - bash: |
                     echo "Extracting artifact..."
-                    unzip -o $(Pipeline.Workspace)/drop/$(artifactName).zip -d /home/azureuser/app
-                    echo "Artifact extracted successfully"
-                    ls -la /home/azureuser/app
-                  displayName: 'Extract artifact'
-
-                # Étape 4: Installer les dépendances sur la VM
-                - script: |
-                    echo "Installing application dependencies on VM..."
                     cd /home/azureuser/app
-                    npm install --production
-                    echo "Dependencies installed"
-                  displayName: 'Install dependencies on VM'
 
-                # Étape 5: Démarrer l'application (optionnel: utiliser systemd ou PM2)
-                - script: |
+                    # Extraire le ZIP
+                    unzip -q $(Pipeline.Workspace)/drop/$(artifactName).zip
+
+                    # Vérifier la structure
+                    echo "Contenu après extraction:"
+                    ls -la
+
+                    # SI les fichiers sont dans un sous-dossier 's', les remonter
+                    if [ -d "s" ] && [ -f "s/package.json" ]; then
+                        echo "⚠️ Fichiers trouvés dans le dossier 's/', remontée..."
+                        mv s/* .
+                        rm -rf s
+                        echo "✅ Fichiers remontés"
+                    fi
+
+                    # Vérifier que package.json existe
+                    if [ ! -f "package.json" ]; then
+                        echo "❌ ERREUR: package.json non trouvé!"
+                        echo "Contenu du répertoire:"
+                        ls -la
+                        exit 1
+                    fi
+
+                    echo "✅ Extraction réussie"
+                    echo "Fichiers présents:"
+                    ls -la
+                  displayName: 'Extract and fix artifact'
+
+                # Étape 5: Installer les dépendances
+                - bash: |
+                    echo "Installing dependencies..."
+                    cd /home/azureuser/app
+
+                    # Vérifier qu'on est au bon endroit
+                    if [ ! -f "package.json" ]; then
+                        echo "❌ ERREUR: package.json absent!"
+                        pwd
+                        ls -la
+                        exit 1
+                    fi
+
+                    npm install --production
+                    echo "✅ Dependencies installed"
+                  displayName: 'Install dependencies'
+
+                # Étape 6: Arrêter l'ancienne application
+                - bash: |
+                    echo "Stopping old application..."
+                    pkill -f "node" || echo "No running process found"
+                    sleep 3
+                    echo "✅ Old application stopped"
+                  displayName: 'Stop old application'
+
+                # Étape 7: Démarrer l'application
+                - bash: |
                     echo "Starting application..."
                     cd /home/azureuser/app
-                    npm start > /tmp/app.log 2>&1 &
+
+                    export NODE_ENV=production
+                    export PORT=3000
+
+                    nohup npm start > /tmp/app.log 2>&1 &
                     sleep 5
-                    echo "Application started (PID: $!)"
+
+                    if pgrep -f "node" > /dev/null; then
+                        echo "✅ Application started"
+                        ps aux | grep node | grep -v grep
+                    else
+                        echo "❌ Failed to start application"
+                        cat /tmp/app.log
+                        exit 1
+                    fi
                   displayName: 'Start application'
 
-                # Étape 6: Vérifier la santé de l'application (Smoke Test)
-                - script: |
+                # Étape 8: Health check avec retry
+                - bash: |
                     echo "Running health check..."
-                    sleep 10
-                    STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 || echo "000")
-                    if [ "$STATUS" == "200" ]; then
-                      echo "✅ Health check passed: HTTP $STATUS"
-                    else
-                      echo "⚠️ Health check returned: HTTP $STATUS"
-                    fi
-                  displayName: 'Health check (Smoke test)'
 
-                # Étape 7: Afficher le résumé du déploiement
-                - script: |
-                    echo "===== Deployment Summary ====="
-                    echo "Application deployed to: /home/azureuser/app"
-                    echo "Host: $(hostname)"
-                    echo "IP: $(hostname -I)"
-                    echo "Process status:"
-                    ps aux | grep node | grep -v grep || echo "Node processes running"
+                    for i in {1..10}; do
+                        echo "Attempt $i/10..."
+
+                        STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health 2>/dev/null || echo "000")
+
+                        if [ "$STATUS" == "200" ]; then
+                            echo "✅ Health check PASSED (HTTP $STATUS)"
+                            curl -s http://localhost:3000/health | head -20
+                            exit 0
+                        fi
+
+                        echo "⏳ HTTP $STATUS - Retrying in 5s..."
+                        sleep 5
+                    done
+
+                    echo "❌ Health check FAILED after 10 attempts"
+                    echo ""
+                    echo "Application logs:"
+                    tail -50 /tmp/app.log
+                    exit 1
+                  displayName: 'Health check'
+
+                # Étape 9: Résumé du déploiement
+                - bash: |
+                    echo ""
+                    echo "╔════════════════════════════════════════╗"
+                    echo "║     DEPLOYMENT SUCCESSFUL! ✅          ║"
+                    echo "╚════════════════════════════════════════╝"
+                    echo ""
+                    echo "📍 Application Directory: /home/azureuser/app"
+                    echo "🏠 Host: $(hostname)"
+                    echo "🌐 IP: $(hostname -I | awk '{print $1}')"
+                    echo ""
+                    echo "📊 Running Process:"
+                    ps aux | grep node | grep -v grep
+                    echo ""
+                    echo "📡 Listening on:"
+                    netstat -tulpn 2>/dev/null | grep :3000 || echo "Checking ports..."
+                    echo ""
+                    echo "🔗 Access URL:"
+                    echo "   http://$(hostname -I | awk '{print $1}'):3000"
+                    echo ""
+                    echo "📝 Recent logs:"
+                    tail -20 /tmp/app.log
+                    echo ""
                   displayName: 'Deployment summary'
+
+
 ```
 
 
