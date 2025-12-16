@@ -116,7 +116,8 @@ Ici, on utilise **Azure Artifacts** (un vrai repository) :
 ### 2.2 Préparer le Code Source
 
 1. **Cloner le Projet** : Importez ou clonez le projet Java Spring Boot fourni (`Java-SpringBoot-Maven`) dans votre Azure Repo.
-2. **Configurer `pom.xml`** :
+   https://github.com/hajjiBel/simple-node-js
+3. **Configurer `pom.xml`** :
    - Dans Azure Artifacts, cliquez sur **Connect to Feed**.
    - Sélectionnez **Maven**.
    - Copiez la section `<repositories>` et `<distributionManagement>` fournie.
